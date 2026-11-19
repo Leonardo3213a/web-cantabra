@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block titulo %}Mi cuenta - WEB-Cántabra{% endblock %}
+{% block contenido %}
+<div class="mb-4"><div class="eyebrow">Seguridad y preferencias</div><h1 class="page-heading mb-0">Mi cuenta</h1>
+<p class="text-muted">{{ usuario.nombre }} · {{ usuario.usuario }} · {{ usuario.rol|capitalize }}</p></div>
+<div class="row g-4">
+  <div class="col-lg-6"><div class="card h-100"><div class="card-body p-4">
+    <h5>Actualizar contraseña</h5>
+    <p class="text-muted small">Usa al menos 10 caracteres, incluyendo una mayúscula, una minúscula y un número.</p>
+    <form method="post" autocomplete="off">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="accion" value="clave">
+      <label class="form-label" for="actual">Contraseña actual</label><input id="actual" class="form-control mb-3" type="password" name="clave_actual" maxlength="128" required autocomplete="current-password">
+      <label class="form-label" for="nueva">Nueva contraseña</label><input id="nueva" class="form-control mb-3" type="password" name="clave_nueva" minlength="10" maxlength="128" required autocomplete="new-password">
+      <label class="form-label" for="confirmar">Confirmar contraseña nueva</label><input id="confirmar" class="form-control mb-3" type="password" name="clave_confirmar" minlength="10" maxlength="128" required autocomplete="new-password">
+      <button class="btn btn-primary">Cambiar contraseña</button>
+    </form>
+  </div></div></div>
+  <div class="col-lg-6"><div class="card h-100"><div class="card-body p-4">
+    <h5>Correo para notificaciones</h5><p class="text-muted small">También recibirás avisos dentro del sistema. Los correos se envían solo si está configurado el servidor SMTP.</p>
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="accion" value="email">
+      <label class="form-label" for="email">Correo electrónico (opcional)</label>
+      <input id="email" class="form-control mb-3" type="email" name="email" maxlength="254" value="{{ usuario.email or '' }}" placeholder="nombre@empresa.com">
+      <button class="btn btn-primary">Guardar correo</button>
+    </form>
+    <div class="alert {{ 'alert-success' if smtp_disponible else 'alert-info' }} small mt-4 mb-0">
+      {{ 'El administrador configuró el servicio de correo.' if smtp_disponible else 'El correo está pendiente de configuración. Los avisos internos sí funcionan.' }}
+    </div>
+  </div></div></div>
+</div>
+{% endblock %}

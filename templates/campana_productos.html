@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block titulo %}Asignar productos a campaña - WEB-Cántabra{% endblock %}
+{% block contenido %}
+<div class="d-flex justify-content-between flex-wrap gap-3 align-items-center mb-3">
+  <div><div class="eyebrow">Campaña {{ campana.anio }}-{{ 'I' if campana.semestre == 1 else 'II' }}</div>
+    <h1 class="page-heading mb-0">{{ campana.nombre }}</h1></div>
+  <a class="btn btn-outline-primary" href="{{ url_for('gestionar_campanas') }}">Volver a campañas</a>
+</div>
+<p class="text-muted">Selecciona los productos que estarán visibles en esta edición. Los cambios no alteran stock ni historial de pedidos.</p>
+<div class="card"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+  <thead class="table-light"><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Stock</th><th>En catálogo</th><th>Acción</th></tr></thead>
+  <tbody>{% for p in productos %}<tr>
+    <td><code>{{ p.codigo }}</code></td><td class="fw-semibold">{{ p.nombre }}</td><td>{{ p.categoria }}</td><td>{{ p.stock }}</td>
+    <td><span class="badge {{ 'bg-success' if p.asignado else 'bg-secondary' }}">{{ 'Sí' if p.asignado else 'No' }}</span></td>
+    <td><form method="post" action="{{ url_for('campana_productos', campana_id=campana.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="producto_id" value="{{ p.id }}">
+      <input type="hidden" name="accion" value="{{ 'quitar' if p.asignado else 'agregar' }}">
+      <button class="btn btn-sm {{ 'btn-outline-danger' if p.asignado else 'btn-success' }}">{{ 'Quitar' if p.asignado else 'Agregar' }}</button>
+    </form></td>
+  </tr>{% else %}<tr><td colspan="6" class="text-center py-4">No hay productos. Registra uno desde el catálogo.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% endblock %}

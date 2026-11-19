@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block titulo %}Iniciar sesión - WEB-Cántabra{% endblock %}
+{% block contenido %}
+<div class="row justify-content-center g-4 align-items-stretch py-2 py-lg-4">
+  <div class="col-lg-5 d-none d-lg-block"><div class="login-banner h-100 d-flex flex-column justify-content-center">
+    <img src="{{ url_for('static', filename='logo.svg') }}" class="logo-grande mb-4" alt="Identidad WEB-Cántabra">
+    <div class="text-uppercase small opacity-75 fw-bold mb-2">Plataforma comercial</div>
+    <h1 class="display-6 fw-bold mb-3">Cada pedido, bajo control.</h1>
+    <p class="opacity-75 mb-4">Administra campañas semestrales, pagos, inventario, envíos y reportes desde un solo lugar.</p>
+    <div class="small opacity-75">Clientes · Ventas · Almacén</div>
+  </div></div>
+  <div class="col-lg-5"><div class="card h-100"><div class="card-body p-4 p-lg-5 d-flex flex-column justify-content-center">
+    <div class="eyebrow mb-2">Acceso al sistema</div><h2 class="fw-bold h3 mb-1">Iniciar sesión</h2>
+    <p class="text-muted mb-4">Sistema de órdenes de compra</p>
+    <form method="post" autocomplete="on">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="mb-3"><label class="form-label fw-semibold" for="usuario">Usuario</label>
+        <input id="usuario" type="text" name="usuario" class="form-control" maxlength="50" required autofocus autocomplete="username"></div>
+      <div class="mb-4"><label class="form-label fw-semibold" for="clave">Contraseña</label>
+        <input id="clave" type="password" name="clave" class="form-control" maxlength="128" required autocomplete="current-password"></div>
+      <button class="btn btn-primary w-100 py-2">Ingresar a WEB-Cántabra</button>
+    </form>
+    <div class="alert alert-info small mt-4 mb-0">
+      <strong>Cuentas de demostración</strong> (clave inicial: <code>1234</code>):
+      <div><code>cliente1</code> · Cliente &nbsp;|&nbsp; <code>vendedor1</code> · Vendedor &nbsp;|&nbsp; <code>almacen1</code> · Almacén</div>
+      <div class="mt-2">Cambia estas contraseñas desde <strong>Mi cuenta</strong> antes de utilizar el sistema con datos reales.</div>
+    </div>
+  </div></div></div>
+</div>
+{% endblock %}

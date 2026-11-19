@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block titulo %}Stock - WEB-Cántabra{% endblock %}
+{% block contenido %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">Control de stock</h3>
+</div>
+
+{% if bajos %}
+<div class="alert alert-warning">
+  <strong>{{ bajos }}</strong> producto(s) con stock bajo (menos de {{ umbral }} unidades). Conviene reponerlos.
+</div>
+{% endif %}
+
+<div class="card shadow-sm mb-4">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Código</th><th>Producto</th><th>Proveedor</th><th class="text-center">Stock</th>
+          {% if session.rol == 'almacen' %}<th class="w-50">Reponer</th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in productos %}
+        <tr>
+          <td><code>{{ p.codigo }}</code></td>
+          <td>{{ p.nombre }}</td>
+          <td>{{ p.proveedor }}</td>
+          <td class="text-center">
+            {% if p.stock == 0 %}<span class="badge bg-danger">Agotado</span>
+            {% elif p.stock < umbral %}<span class="badge bg-warning text-dark">{{ p.stock }} (poco stock)</span>
+            {% else %}<span class="badge bg-success">{{ p.stock }}</span>{% endif %}
+          </td>
+          {% if session.rol == 'almacen' %}
+          <td>
+            <form method="post" action="{{ url_for('stock_reponer', producto_id=p.id) }}" class="d-flex gap-1">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="number" name="cantidad" min="1" max="{{ max_stock }}" placeholder="Cant."
+                     class="form-control form-control-sm" aria-label="Cantidad a reponer" required>
+              <input type="text" name="nota" maxlength="200" placeholder="Nota (opcional)"
+                     class="form-control form-control-sm" aria-label="Nota">
+              <button class="btn btn-sm btn-success text-nowrap">Reponer</button>
+            </form>
+          </td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<h5>Últimos movimientos de inventario</h5>
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>Fecha</th><th>Producto</th><th>Tipo</th><th class="text-end">Cantidad</th><th>Responsable</th><th>Detalle</th></tr>
+      </thead>
+      <tbody>
+        {% for m in movimientos %}
+        <tr>
+          <td>{{ m.fecha }}</td>
+          <td>{{ m.producto_nombre }}</td>
+          <td>
+            {% if m.tipo == 'ingreso' %}<span class="badge text-bg-success">Ingreso</span>
+            {% elif m.tipo == 'salida_pedido' %}<span class="badge text-bg-primary">Salida por pedido</span>
+            {% elif m.tipo == 'devolucion' %}<span class="badge text-bg-info">Devolución</span>
+            {% else %}<span class="badge text-bg-secondary">Ajuste</span>{% endif %}
+          </td>
+          <td class="text-end">{{ '%+d'|format(m.cantidad) }}</td>
+          <td>{{ m.usuario_nombre }}</td>
+          <td class="small text-muted">{{ m.nota or '' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-muted py-3">Aún no hay movimientos.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

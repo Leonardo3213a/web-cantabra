@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block titulo %}Reportes - WEB-Cántabra{% endblock %}
+{% block contenido %}
+{% set tiempos = r.tiempos %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <h3 class="mb-0">Reportes de eficiencia</h3>
+  <div class="d-flex flex-wrap gap-2">
+    <div class="btn-group" role="group" aria-label="Periodo">
+      {% for clave, texto in [('7', '7 días'), ('30', '30 días'), ('90', '90 días'), ('todos', 'Todo')] %}
+        <a href="{{ url_for('reportes_panel', dias=clave) }}"
+           class="btn btn-sm btn-outline-primary {{ 'active' if periodo == clave }}">{{ texto }}</a>
+      {% endfor %}
+    </div>
+    {% if session.rol == 'vendedor' %}
+      <a href="{{ url_for('reportes_excel', dias=periodo) }}" class="btn btn-sm btn-success">⬇ Descargar Excel</a>
+      <a href="{{ url_for('reportes_csv', dias=periodo) }}" class="btn btn-sm btn-outline-secondary">CSV</a>
+    {% endif %}
+  </div>
+</div>
+
+{# ---------- Alertas ---------- #}
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card shadow-sm {{ 'border-danger' if r.alertas.pagos_atrasados }}">
+      <div class="card-body">
+        <div class="text-muted small">Pagos sin validar por más de 24 h</div>
+        <div class="fs-3 fw-bold {{ 'text-danger' if r.alertas.pagos_atrasados }}">{{ r.alertas.pagos_atrasados }}</div>
+        <a class="small" href="{{ url_for('pedidos', estado='por_validar') }}">Ver pedidos</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card shadow-sm {{ 'border-warning' if r.alertas.preparacion_atrasada }}">
+      <div class="card-body">
+        <div class="text-muted small">Pedidos en preparación por más de 48 h</div>
+        <div class="fs-3 fw-bold {{ 'text-warning' if r.alertas.preparacion_atrasada }}">{{ r.alertas.preparacion_atrasada }}</div>
+        <a class="small" href="{{ url_for('pedidos', estado='en_preparacion') }}">Ver pedidos</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card shadow-sm {{ 'border-warning' if r.alertas.stock_bajo }}">
+      <div class="card-body">
+        <div class="text-muted small">Productos con stock bajo</div>
+        <div class="fs-3 fw-bold {{ 'text-warning' if r.alertas.stock_bajo }}">{{ r.alertas.stock_bajo }}</div>
+        <a class="small" href="{{ url_for('inventario') }}">Ver stock</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ---------- Indicadores principales ---------- #}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-2"><div class="card shadow-sm h-100"><div class="card-body">
+    <div class="text-muted small">Pedidos</div><div class="fs-4 fw-bold">{{ r.total_pedidos }}</div></div></div></div>
+  <div class="col-6 col-lg-2"><div class="card shadow-sm h-100"><div class="card-body">
+    <div class="text-muted small">Ventas confirmadas</div><div class="fs-5 fw-bold">{{ r.ventas.monto|soles }}</div>
+    <div class="small text-muted">{{ r.ventas.pedidos }} pedido(s)</div></div></div></div>
+  <div class="col-6 col-lg-2"><div class="card shadow-sm h-100"><div class="card-body">
+    <div class="text-muted small">Ticket promedio</div>
+    <div class="fs-5 fw-bold">{{ r.ventas.ticket|soles if r.ventas.ticket is not none else '—' }}</div></div></div></div>
+  <div class="col-6 col-lg-2"><div class="card shadow-sm h-100"><div class="card-body">
+    <div class="text-muted small">Cancelaciones</div><div class="fs-4 fw-bold">{{ r.tasa_cancelacion|porcentaje }}</div></div></div></div>
+  <div class="col-6 col-lg-2"><div class="card shadow-sm h-100"><div class="card-body">
+    <div class="text-muted small">Pagos rechazados</div><div class="fs-4 fw-bold">{{ r.tasa_rechazo_pago|porcentaje }}</div></div></div></div>
+  <div class="col-6 col-lg-2"><div class="card shadow-sm h-100"><div class="card-body">
+    <div class="text-muted small">Satisfacción</div>
+    <div class="fs-4 fw-bold text-warning">{{ ('%.1f ★'|format(r.satisfaccion.promedio)) if r.satisfaccion.promedio is not none else '—' }}</div>
+    <div class="small text-muted">{{ r.satisfaccion.n }} calificación(es)</div></div></div></div>
+</div>
+
+<div class="row g-4 mb-4">
+  {# ---------- Comparativo antes / después ---------- #}
+  <div class="col-lg-7">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white"><strong>Mejora frente al proceso manual</strong></div>
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead class="table-light">
+            <tr><th>Indicador</th><th class="text-end">Proceso manual (supuesto)</th>
+                <th class="text-end">Con el sistema</th><th class="text-end">Reducción</th></tr>
+          </thead>
+          <tbody>
+            {% for c in r.comparativo %}
+            <tr>
+              <td>{{ c.nombre }}</td>
+              <td class="text-end">{{ c.base|duracion }}</td>
+              <td class="text-end fw-bold">{{ c.actual|duracion }}</td>
+              <td class="text-end">
+                {% if c.reduccion is none %}—
+                {% elif c.reduccion >= 0 %}<span class="badge text-bg-success">−{{ '%.1f'|format(c.reduccion) }} %</span>
+                {% else %}<span class="badge text-bg-danger">+{{ '%.1f'|format(-c.reduccion) }} %</span>{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer bg-white small text-muted">
+        «Con el sistema» se calcula con los pedidos registrados. El «proceso manual» es una línea base
+        supuesta (correo, llamadas y hojas de cálculo); se define en <code>reportes.py</code>.
+      </div>
+    </div>
+  </div>
+
+  {# ---------- Tiempos del proceso ---------- #}
+  <div class="col-lg-5">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white"><strong>Tiempo promedio por etapa</strong></div>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item d-flex justify-content-between"><span>Recibido → pago validado</span><strong>{{ tiempos.validacion|duracion }}</strong></li>
+        <li class="list-group-item d-flex justify-content-between"><span>Pago validado → enviado</span><strong>{{ tiempos.preparacion|duracion }}</strong></li>
+        <li class="list-group-item d-flex justify-content-between"><span>Recibido → enviado</span><strong>{{ tiempos.procesamiento|duracion }}</strong></li>
+        <li class="list-group-item d-flex justify-content-between"><span>Enviado → entregado</span><strong>{{ tiempos.entrega|duracion }}</strong></li>
+        <li class="list-group-item d-flex justify-content-between"><span>Ciclo completo (recibido → entregado)</span><strong>{{ tiempos.ciclo|duracion }}</strong></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  {# ---------- Pedidos por estado ---------- #}
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white"><strong>Pedidos por estado</strong></div>
+      <ul class="list-group list-group-flush">
+        {% for codigo, datos in estados.items() %}
+        <li class="list-group-item">
+          <div class="d-flex justify-content-between small">
+            <span>{{ datos[0] }}</span><strong>{{ r.por_estado.get(codigo, 0) }}</strong>
+          </div>
+          <progress class="w-100" value="{{ r.por_estado.get(codigo, 0) }}" max="{{ r.total_pedidos if r.total_pedidos else 1 }}"></progress>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  {# ---------- Satisfacción ---------- #}
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white"><strong>Satisfacción del cliente</strong></div>
+      <ul class="list-group list-group-flush">
+        {% for estrellas in [5, 4, 3, 2, 1] %}
+        <li class="list-group-item">
+          <div class="d-flex justify-content-between small">
+            <span class="text-warning">{{ '★' * estrellas }}{{ '☆' * (5 - estrellas) }}</span>
+            <strong>{{ r.satisfaccion.distribucion[estrellas] }}</strong>
+          </div>
+          <progress class="w-100" value="{{ r.satisfaccion.distribucion[estrellas] }}" max="{{ r.satisfaccion.n if r.satisfaccion.n else 1 }}"></progress>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white"><strong>Productos más vendidos</strong></div>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead class="table-light"><tr><th>Producto</th><th class="text-end">Unidades</th><th class="text-end">Monto</th></tr></thead>
+          <tbody>
+            {% for p in r.top_productos %}
+            <tr><td>{{ p.nombre }} <code class="small">{{ p.codigo }}</code></td>
+                <td class="text-end">{{ p.unidades }}</td><td class="text-end">{{ p.monto|soles }}</td></tr>
+            {% else %}
+            <tr><td colspan="3" class="text-center text-muted py-3">Aún no hay ventas en este periodo.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white"><strong>Ventas por categoría</strong></div>
+      <ul class="list-group list-group-flush">
+        {% for c in r.por_categoria %}
+        <li class="list-group-item">
+          <div class="d-flex justify-content-between small"><span>{{ c.categoria }}</span><strong>{{ c.monto|soles }}</strong></div>
+          <progress class="w-100" value="{{ c.monto }}" max="{{ r.ventas.monto if r.ventas.monto else 1 }}"></progress>
+        </li>
+        {% else %}
+        <li class="list-group-item text-center text-muted">Aún no hay ventas en este periodo.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block titulo %}Catálogo - WEB-Cántabra{% endblock %}
+{% block contenido %}
+<section class="hero mb-4">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 position-relative">
+    <div>
+      <div class="text-uppercase small fw-bold opacity-75 mb-2">Gestión comercial · Edición semestral</div>
+      <h1 class="page-heading mb-2">Catálogo de productos</h1>
+      <div class="small">{{ campana.nombre if campana else 'Productos de todas las campañas' }}</div>
+      {% if campana %}<div class="small opacity-75 mt-2">{{ campana.descripcion }}</div>{% endif %}
+    </div>
+    {% if session.rol == 'vendedor' %}
+      <div class="d-flex flex-wrap gap-2">
+        <a href="{{ url_for('gestionar_campanas') }}" class="btn btn-outline-light">Administrar campañas</a>
+        <a href="{{ url_for('producto_nuevo') }}" class="btn btn-light text-primary">+ Nuevo producto</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% if session.rol == 'vendedor' and campana and not campana.publicada %}
+<div class="alert alert-warning">Vista preliminar: esta campaña está en borrador y no es visible para clientes.</div>
+{% endif %}
+<form class="row g-2 mb-3 align-items-end" method="get">
+  <div class="col-lg-4">
+    <label class="form-label small fw-semibold" for="busqueda">Buscar producto</label>
+    <input id="busqueda" type="text" name="q" maxlength="100" value="{{ busqueda }}" class="form-control" placeholder="Nombre o código">
+  </div>
+  <div class="col-lg-3">
+    <label class="form-label small fw-semibold" for="categoria">Categoría</label>
+    <select id="categoria" name="categoria" class="form-select">
+      <option value="">Todas las categorías</option>
+      {% for c in categorias %}<option value="{{ c }}" {{ 'selected' if c == categoria_sel }}>{{ c }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-lg-3">
+    <label class="form-label small fw-semibold" for="campana">Campaña semestral</label>
+    <select id="campana" name="campana" class="form-select">
+      {% if session.rol == 'vendedor' %}<option value="todas" {{ 'selected' if campana_sel == 'todas' }}>Todos los productos</option>{% endif %}
+      {% for c in campanas %}
+      <option value="{{ c.id }}" {{ 'selected' if c.id|string == campana_sel }}>{{ c.anio }}-{{ 'I' if c.semestre == 1 else 'II' }} · {{ c.nombre }}{{ ' (borrador)' if not c.publicada else '' }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-lg-2 d-flex gap-2">
+    <button class="btn btn-primary flex-grow-1">Filtrar</button>
+    <a href="{{ url_for('catalogo') }}" class="btn btn-outline-secondary" aria-label="Limpiar filtros">↻</a>
+  </div>
+</form>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light"><tr>
+        <th>Código</th><th>Producto</th><th>Categoría</th><th>Proveedor</th>
+        <th class="text-end">Precio</th><th class="text-center">Stock</th>
+        {% if session.rol == 'vendedor' %}<th>Gestión</th>{% endif %}
+        {% if session.rol == 'cliente' %}<th>Comprar</th>{% endif %}
+      </tr></thead>
+      <tbody>
+        {% for p in productos %}
+        <tr>
+          <td><code>{{ p.codigo }}</code></td>
+          <td class="fw-semibold">{{ p.nombre }}</td>
+          <td>{{ p.categoria }}</td><td>{{ p.proveedor }}</td>
+          <td class="text-end fw-semibold">{{ p.precio|soles }}</td>
+          <td class="text-center">
+            {% if p.stock == 0 %}<span class="badge bg-danger">Agotado</span>
+            {% elif p.stock < 10 %}<span class="badge bg-warning text-dark">{{ p.stock }} (poco stock)</span>
+            {% else %}<span class="badge bg-success">{{ p.stock }}</span>{% endif %}
+          </td>
+          {% if session.rol == 'vendedor' %}<td><a href="{{ url_for('producto_editar', producto_id=p.id) }}" class="btn btn-sm btn-outline-primary">Editar</a></td>{% endif %}
+          {% if session.rol == 'cliente' %}<td>
+            {% if p.stock > 0 and campana %}
+            <form method="post" action="{{ url_for('carrito_agregar', producto_id=p.id) }}" class="d-flex gap-1">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="campana_id" value="{{ campana.id }}">
+              <input type="number" name="cantidad" value="1" min="1" max="{{ p.stock }}" class="form-control form-control-sm cantidad-catalogo" aria-label="Cantidad">
+              <button class="btn btn-sm btn-primary text-nowrap">Agregar</button>
+            </form>
+            {% else %}<span class="text-muted small">Sin disponibilidad</span>{% endif %}
+          </td>{% endif %}
+        </tr>
+        {% else %}<tr><td colspan="8" class="text-center text-muted py-5">No se encontraron productos para esta campaña. {% if session.rol == 'vendedor' %}Puedes asignarlos desde Campañas.{% endif %}</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<p class="text-muted small mt-2">{{ productos|length }} producto(s) mostrado(s)</p>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block titulo %}{{ titulo }} - WEB-Cántabra{% endblock %}
+{% block contenido %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">{{ titulo }}</h3>
+</div>
+
+{% if resumen %}
+<div class="d-flex flex-wrap gap-2 mb-3">
+  {% for codigo, datos in estados.items() %}
+    <a href="{{ url_for('pedidos', estado=codigo) }}"
+       class="btn btn-sm btn-outline-{{ datos[1] }} {{ 'active' if filtro == codigo }}">
+      {{ datos[0] }} <span class="badge text-bg-{{ datos[1] }}">{{ resumen.get(codigo, 0) }}</span>
+    </a>
+  {% endfor %}
+  <a href="{{ url_for('pedidos', estado='todos') }}"
+     class="btn btn-sm btn-outline-dark {{ 'active' if filtro == 'todos' }}">Todos</a>
+</div>
+{% endif %}
+
+{% if filtro is not none %}
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-4">
+    <select name="estado" class="form-select">
+      <option value="todos" {{ 'selected' if filtro == 'todos' }}>Todos los estados</option>
+      {% for codigo, datos in estados.items() %}
+        <option value="{{ codigo }}" {{ 'selected' if filtro == codigo }}>{{ datos[0] }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2"><button class="btn btn-primary">Filtrar</button></div>
+</form>
+{% endif %}
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Pedido</th><th>Fecha</th>
+          {% if mostrar_cliente %}<th>Cliente</th>{% endif %}
+          <th>Estado</th><th>Pago</th><th class="text-end">Total</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in pedidos %}
+        <tr>
+          <td><strong>{{ p.id|codigo_pedido }}</strong></td>
+          <td>{{ p.fecha }}</td>
+          {% if mostrar_cliente %}<td>{{ p.cliente_nombre }}</td>{% endif %}
+          <td><span class="badge bg-{{ p.estado|estado_color }}">{{ p.estado|estado_texto }}</span></td>
+          <td>{{ p.metodo_pago }}</td>
+          <td class="text-end">{{ p.total|soles }}</td>
+          <td class="text-end">
+            <a href="{{ url_for('pedido_detalle', pedido_id=p.id) }}" class="btn btn-sm btn-outline-primary">Ver</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">No hay pedidos para mostrar.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

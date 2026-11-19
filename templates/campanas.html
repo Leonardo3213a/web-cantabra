@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block titulo %}Campañas semestrales - WEB-Cántabra{% endblock %}
+{% block contenido %}
+<div class="hero mb-4"><div class="eyebrow text-white-50">Administración del catálogo</div>
+<h1 class="page-heading mb-2">Campañas semestrales</h1>
+<p class="mb-0 opacity-75">Programa una edición enero–junio y otra julio–diciembre. Prepara productos y publica cuando esté lista.</p></div>
+<div class="row g-4">
+  <div class="col-lg-7"><div class="card"><div class="card-body">
+    <h5 class="mb-3">Campañas creadas</h5>
+    {% for c in campanas %}
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 border rounded-3 p-3 mb-2">
+      <div><div class="fw-bold">{{ c.nombre }}</div>
+        <div class="small text-muted">{{ c.anio }} · Semestre {{ 'I (enero a junio)' if c.semestre == 1 else 'II (julio a diciembre)' }} · {{ c.n_productos }} productos</div>
+        <div class="small">{{ c.descripcion }}</div>
+        <span class="badge {{ 'bg-success' if c.publicada else 'bg-warning text-dark' }} mt-1">{{ 'Publicada' if c.publicada else 'Borrador' }}</span>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <a href="{{ url_for('campana_productos', campana_id=c.id) }}" class="btn btn-sm btn-outline-primary">Asignar productos</a>
+        <a href="{{ url_for('catalogo', campana=c.id) }}" class="btn btn-sm btn-outline-secondary">Ver</a>
+        <form method="post" action="{{ url_for('campana_publicacion', campana_id=c.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="accion" value="{{ 'ocultar' if c.publicada else 'publicar' }}">
+          <button class="btn btn-sm {{ 'btn-outline-danger' if c.publicada else 'btn-success' }}">{{ 'Ocultar' if c.publicada else 'Publicar' }}</button>
+        </form>
+      </div>
+    </div>
+    {% else %}<p class="text-muted">No hay campañas creadas.</p>{% endfor %}
+  </div></div></div>
+  <div class="col-lg-5"><div class="card"><div class="card-body">
+    <h5 class="mb-3">Crear campaña</h5>
+    <form method="post" action="{{ url_for('campana_nueva') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="row g-3">
+        <div class="col-6"><label for="anio" class="form-label">Año</label><input id="anio" class="form-control" type="number" min="2020" max="2100" name="anio" value="{{ anio_sugerido }}" required></div>
+        <div class="col-6"><label for="semestre" class="form-label">Semestre</label><select id="semestre" name="semestre" class="form-select"><option value="1" {{ 'selected' if semestre_sugerido == 1 }}>I · Ene–Jun</option><option value="2" {{ 'selected' if semestre_sugerido == 2 }}>II · Jul–Dic</option></select></div>
+        <div class="col-12"><label for="nombre" class="form-label">Nombre</label><input id="nombre" class="form-control" name="nombre" maxlength="100" placeholder="Ej.: Catálogo 2027 - Semestre I" required></div>
+        <div class="col-12"><label for="descripcion" class="form-label">Descripción (opcional)</label><textarea id="descripcion" class="form-control" rows="3" maxlength="300" name="descripcion"></textarea></div>
+        <div class="col-12"><button class="btn btn-primary w-100">Crear borrador</button></div>
+      </div>
+    </form>
+    <p class="text-muted small mt-3 mb-0">Puedes reutilizar un mismo producto en distintas campañas, sin duplicar su ficha ni alterar el stock.</p>
+  </div></div></div>
+</div>
+{% endblock %}

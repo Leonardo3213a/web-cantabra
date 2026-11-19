@@ -1,0 +1,38 @@
+:root { --azul:#153d68; --azul-profundo:#0e2a4a; --celeste:#087fac; --menta:#17a49a; --fondo:#f2f6fb; --texto:#1c3048; }
+html { scroll-behavior:smooth }
+body { background:var(--fondo); color:var(--texto); font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+a { color:#075c90; }
+.navbar-institucional { background:linear-gradient(108deg,#0c2849,#124c7a 80%,#136d9b); box-shadow:0 8px 24px rgba(13,37,74,.13); }
+.navbar-brand { letter-spacing:-.5px; }
+.logo-nav { width:40px;height:40px;object-fit:contain; }
+.nav-link-institucional { color:#e7f4fd; padding:7px 9px; border-radius:9px; text-decoration:none; font-size:.92rem; }
+.nav-link-institucional:hover,.nav-link-institucional:focus { color:#fff; background:rgba(255,255,255,.13); }
+.badge-rol { background:rgba(255,255,255,.16);color:#fff; }
+.hero { background:linear-gradient(115deg,#113c69,#146c92); color:#fff; border-radius:20px; padding:29px 32px; position:relative; overflow:hidden; }
+.hero::after { content:"";position:absolute;border:45px solid rgba(255,255,255,.06);width:260px;height:260px;border-radius:50%;right:-75px;top:-110px;pointer-events:none; }
+.hero small,.hero .text-white-50 { color:#d4e8f6!important; }
+.card { border:1px solid #e1eaf4; border-radius:15px; box-shadow:0 4px 15px rgba(10,45,77,.045); overflow:hidden; }
+.card-header { background:#fff; border-color:#e4edf7; }
+.btn { border-radius:9px; font-weight:600; }
+.btn-primary { background:#135e96;border-color:#135e96; }
+.btn-primary:hover { background:#0c4879;border-color:#0c4879; }
+.btn-success { background:#148575;border-color:#148575; }
+.btn-success:hover { background:#0e6c5d;border-color:#0e6c5d; }
+.btn-outline-primary { color:#14598b;border-color:#9ebbd1; }
+.btn-outline-primary:hover { background:#135e96;border-color:#135e96;color:#fff; }
+.form-control,.form-select { border-radius:9px; border-color:#cfdce9; }
+.form-control:focus,.form-select:focus { border-color:#57a7c9; box-shadow:0 0 0 .2rem rgba(39,132,176,.15); }
+.table>:not(caption)>*>* { padding:13px 12px; }
+.table thead th { color:#34516c;font-weight:700; font-size:.86rem; text-transform:uppercase; letter-spacing:.025em; }
+.table code { color:#176c98; }
+.page-heading { font-size:1.8rem; font-weight:760; letter-spacing:-.7px; }
+.eyebrow { color:#0b718e; text-transform:uppercase; letter-spacing:.13em; font-weight:750; font-size:.72rem; }
+.info-tile { padding:15px 18px; border:1px solid #deebf3;border-radius:12px;background:#f7fbff; }
+.campana-badge { background:#e5f3fa;color:#135e86;border-radius:999px;display:inline-block;padding:7px 11px;font-size:.85rem;font-weight:700; }
+.login-banner { background:linear-gradient(160deg,#0d3155,#115d87);border-radius:18px;padding:32px;color:#fff; }
+.login-banner .logo-grande { width:75px; height:75px; filter:drop-shadow(0 2px 8px rgba(0,0,0,.12)); }
+.alert { border-radius:12px; }
+footer { font-size:.78rem; color:#6b8096; }
+@media(max-width:767.98px){.hero{padding:22px 20px}.navbar-institucional .container {gap:12px}.nav-link-institucional{font-size:.85rem;padding:5px 7px}.page-heading{font-size:1.5rem}}
+
+.cantidad-catalogo { max-width:85px; }
